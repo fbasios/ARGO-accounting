@@ -26,6 +26,11 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
 
 ---
 
+## Unreleased - Added
+
+- [#290](https://github.com/ARGOeu/argo-accounting/pull/290) - ACC-1873 Make
+- credit management module optional via Maven profile.
+
 ## 1.8.1 - 2025-12-09
 
 ---

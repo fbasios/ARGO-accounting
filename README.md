@@ -504,3 +504,49 @@ endpoint:
 Swagger UI is accessible at `/swagger-ui` endpoint:
 
 `{accounting_system_host}/swagger-ui`
+
+## Credit Management Module
+
+The Credit Management functionality is packaged as a separate Maven module
+(`credit-management`) and is **not included** in the API jar by default.
+Applications that do not require credit management capabilities can build
+a jar without any of its classes, endpoints, or CDI beans.
+
+### Building without Credit Management (default)
+
+```bash
+mvn clean package
+```
+
+### Building with Credit Management
+
+Activate the `credit-management` Maven profile using the `-P` flag:
+
+```bash
+mvn clean package -Pcredit-management
+```
+
+This adds the `credit-management` module as a dependency
+and includes its REST endpoints and CDI beans in the
+resulting `accounting-service`.
+
+### Running in dev mode
+
+Since this is a multi-module reactor, run Maven from
+the project root and specify the module explicitly:
+
+```bash
+# Without Credit Management
+mvn quarkus:dev -pl api -am
+
+# With Credit Management
+mvn quarkus:dev -pl api -am -Pcredit-management
+```
+
+If you've made changes to the `credit-management
+module, install it locally first so the reactor picks up
+the latest version:
+
+> ```bash
+> mvn install -pl credit-management
+> ```
