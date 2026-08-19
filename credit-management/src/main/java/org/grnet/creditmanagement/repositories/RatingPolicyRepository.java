@@ -77,4 +77,13 @@ public class RatingPolicyRepository implements PanacheMongoRepositoryBase<Rating
         return find("installationId = ?1", Sort.by("metricDefinitionId").and("validFrom"), installationId)
                 .page(page - 1, size);
     }
+
+    /**
+     * Finds a Rating Policy entry by id. Returns empty if
+     * the id doesn't exist, or exists.
+     */
+    public Optional<RatingPolicyEntity> findByIdOptional(String policyId) {
+
+        return findByIdOptional(policyId);
+    }
 }

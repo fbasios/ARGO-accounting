@@ -8,6 +8,7 @@ import org.bson.types.ObjectId;
 import org.grnet.creditmanagement.dtos.CurrentRatingPolicyEntryDto;
 import org.grnet.creditmanagement.dtos.RatingPolicyRequestDto;
 import org.grnet.creditmanagement.dtos.RatingPolicyResponseDto;
+import org.grnet.creditmanagement.dtos.RatingPolicyUpdateRequestDto;
 import org.grnet.creditmanagement.entities.RatingPolicyEntity;
 import org.grnet.creditmanagement.exceptions.RatingPolicyBeforeEarliestException;
 import org.grnet.creditmanagement.exceptions.RatingPolicyConflictException;
@@ -115,5 +116,18 @@ public class RatingPolicyService {
         response.validFrom = entity.getValidFrom();
         response.rate = entity.getRate();
         return response;
+    }
+
+    public RatingPolicyResponseDto updateRatingPolicy(String policyId, RatingPolicyUpdateRequestDto request) {
+
+        var entity = ratingPolicyRepository
+                .findByIdOptional(policyId)
+                .orElseThrow(() -> new NotFoundException(
+                        "There is no Rating Policy with id " + policyId));
+
+        entity.setRate(request.rate);
+        ratingPolicyRepository.update(entity);
+
+        return toResponseDto(entity);
     }
 }
