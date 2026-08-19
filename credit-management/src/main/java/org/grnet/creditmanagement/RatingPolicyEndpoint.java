@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -33,6 +34,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.creditmanagement.dtos.CurrentRatingPolicyEntryDto;
 import org.grnet.creditmanagement.dtos.RatingPolicyRequestDto;
 import org.grnet.creditmanagement.dtos.RatingPolicyResponseDto;
+import org.grnet.creditmanagement.dtos.RatingPolicyUpdateRequestDto;
 import org.grnet.creditmanagement.exceptions.RatingPolicyConflictExceptionMapper;
 import org.grnet.creditmanagement.pagination.PageResource;
 import org.grnet.creditmanagement.services.RatingPolicyService;
@@ -159,7 +161,7 @@ public class RatingPolicyEndpoint {
     @APIResponse(
             responseCode = "200",
             description = "A paginated list of Rating Policy entries for the Installation.",
-            content = @Content(schema = @Schema( type = SchemaType.OBJECT, implementation = PageableRatingPolicyResponseDto.class)))
+            content = @Content(schema = @Schema(type = SchemaType.OBJECT, implementation = PageableRatingPolicyResponseDto.class)))
     @APIResponse(
             responseCode = "404",
             description = "Installation does not exist.",
@@ -187,6 +189,47 @@ public class RatingPolicyEndpoint {
             @Context UriInfo uriInfo) {
 
         var response = ratingPolicyService.getAllRatingPolicies(installationId, page, size, uriInfo);
+
+        return Response.ok(response).build();
+    }
+
+    @Tag(name = "Credit Management")
+    @Operation(
+            summary = "Update the rate of an existing Rating Policy entry.",
+            description = "Updates the rate of the Rating Policy entry identified by policy_id, for the given " +
+                    "Installation and Metric Definition. Only the rate can be updated — the valid_from date of " +
+                    "the entry cannot be changed through this endpoint.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The Rating Policy entry has been successfully updated.",
+            content = @Content(schema = @Schema(type = SchemaType.OBJECT, implementation = RatingPolicyResponseDto.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "The request body is invalid.",
+            content = @Content(schema = @Schema(type = SchemaType.OBJECT, implementation = RatingPolicyConflictExceptionMapper.ErrorResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "The Installation, Metric Definition, or Rating Policy entry does not exist, or the " +
+                    "Rating Policy entry does not belong to the given Installation and Metric Definition.",
+            content = @Content(schema = @Schema(type = SchemaType.OBJECT, implementation = RatingPolicyConflictExceptionMapper.ErrorResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.")
+    @SecurityRequirement(name = "Authentication")
+    @PATCH
+    @Path("/rate-policies/{policy_id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateRatingPolicy(
+            @Parameter(name = "policy_id", in = PATH, description = "The Rating Policy entry id.", required = true,
+                    schema = @Schema(type = SchemaType.STRING, implementation = String.class, example = "64f1a2b3c4d5e6f7a8b9c0d1"))
+            @PathParam("policy_id") String policyId,
+
+            @RequestBody(description = "The new rate to apply.", required = true,
+                    content = @Content(schema = @Schema(implementation = RatingPolicyUpdateRequestDto.class)))
+            @Valid RatingPolicyUpdateRequestDto request) {
+
+        var response = ratingPolicyService.updateRatingPolicy(policyId, request);
 
         return Response.ok(response).build();
     }

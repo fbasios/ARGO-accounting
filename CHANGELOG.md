@@ -36,6 +36,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
   Current Rates for an Installation.
 - [#293](https://github.com/ARGOeu/argo-accounting/pull/293) - ACC-1868 List
   All Rate Policy Entries for an Installation.
+- [#294](https://github.com/ARGOeu/argo-accounting/pull/294) - ACC-1875 PATCH
+  Rate for a Single Metric Definition on an Installation.
 
 ## 1.8.1 - 2025-12-09
 
