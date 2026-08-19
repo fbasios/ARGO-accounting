@@ -3,15 +3,21 @@ package org.grnet.creditmanagement;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
@@ -28,7 +34,10 @@ import org.grnet.creditmanagement.dtos.CurrentRatingPolicyEntryDto;
 import org.grnet.creditmanagement.dtos.RatingPolicyRequestDto;
 import org.grnet.creditmanagement.dtos.RatingPolicyResponseDto;
 import org.grnet.creditmanagement.exceptions.RatingPolicyConflictExceptionMapper;
+import org.grnet.creditmanagement.pagination.PageResource;
 import org.grnet.creditmanagement.services.RatingPolicyService;
+
+import java.util.List;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.PATH;
 
@@ -62,21 +71,21 @@ public class RatingPolicyEndpoint {
     @APIResponse(
             responseCode = "200",
             description = "The Rating Policy has been successfully created.",
-            content = @Content(schema = @Schema(implementation = RatingPolicyResponseDto.class)))
+            content = @Content(schema = @Schema(type = SchemaType.OBJECT, implementation = RatingPolicyResponseDto.class)))
     @APIResponse(
             responseCode = "400",
             description = "A Rating Policy with the exact same valid_from already exists for this Installation " +
                     "and Metric Definition, or the given valid_from is earlier than the earliest already " +
                     "recorded valid_from for this Installation and Metric Definition.",
-            content = @Content(schema = @Schema(implementation = RatingPolicyConflictExceptionMapper.ErrorResponse.class)))
+            content = @Content(schema = @Schema(type = SchemaType.OBJECT, implementation = RatingPolicyConflictExceptionMapper.ErrorResponse.class)))
     @APIResponse(
             responseCode = "404",
             description = "Installation, or Metric Definition does not exist.",
-            content = @Content(schema = @Schema(implementation = RatingPolicyConflictExceptionMapper.ErrorResponse.class)))
+            content = @Content(schema = @Schema(type = SchemaType.OBJECT, implementation = RatingPolicyConflictExceptionMapper.ErrorResponse.class)))
     @APIResponse(
             responseCode = "500",
             description = "Internal Server Error.",
-            content = @Content(schema = @Schema(implementation = RatingPolicyConflictExceptionMapper.ErrorResponse.class)))
+            content = @Content(schema = @Schema(type = SchemaType.OBJECT, implementation = RatingPolicyConflictExceptionMapper.ErrorResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @POST
     @Path("/{installation_id}/metrics/{metric_definition_id}/rate-policy")
@@ -121,11 +130,11 @@ public class RatingPolicyEndpoint {
     @APIResponse(
             responseCode = "404",
             description = "Installation does not exist.",
-            content = @Content(schema = @Schema(implementation = RatingPolicyConflictExceptionMapper.ErrorResponse.class)))
+            content = @Content(schema = @Schema(type = SchemaType.OBJECT, implementation = RatingPolicyConflictExceptionMapper.ErrorResponse.class)))
     @APIResponse(
             responseCode = "500",
             description = "Internal Server Error.",
-            content = @Content(schema = @Schema(implementation = RatingPolicyConflictExceptionMapper.ErrorResponse.class)))
+            content = @Content(schema = @Schema(type = SchemaType.OBJECT, implementation = RatingPolicyConflictExceptionMapper.ErrorResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @GET
     @Path("/{installation_id}/rate-policies/current")
@@ -138,5 +147,62 @@ public class RatingPolicyEndpoint {
         var response = ratingPolicyService.getCurrentRatingPolicies(installationId);
 
         return Response.ok(response).build();
+    }
+
+    @Tag(name = "Credit Management")
+    @Operation(
+            summary = "List all Rate Policies for an Installation.",
+            description = "Returns a paginated list of all Rating Policy entries recorded for the given " +
+                    "Installation, across all metric definitions, ordered by metric_definition_id and then " +
+                    "valid_from. If the Installation exists but has no Rating Policy entries at all, an empty " +
+                    "paginated result is returned rather than an error.")
+    @APIResponse(
+            responseCode = "200",
+            description = "A paginated list of Rating Policy entries for the Installation.",
+            content = @Content(schema = @Schema( type = SchemaType.OBJECT, implementation = PageableRatingPolicyResponseDto.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Installation does not exist.",
+            content = @Content(schema = @Schema(type = SchemaType.OBJECT, implementation = RatingPolicyConflictExceptionMapper.ErrorResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(type = SchemaType.OBJECT, implementation = RatingPolicyConflictExceptionMapper.ErrorResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/installations/{installation_id}/rate-policies")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response listRatingPolicies(
+            @Parameter(name = "installation_id", in = PATH, description = "The installation id.", required = true,
+                    schema = @Schema(type = SchemaType.STRING, implementation = String.class, example = "707f1f77bcf86cd799439013"))
+            @PathParam("installation_id") String installationId,
+
+            @Parameter(name = "page", description = "The page number. Must be >= 1.")
+            @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @DefaultValue("1") @QueryParam("page") int page,
+
+            @Parameter(name = "size", description = "The page size.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.")
+            @DefaultValue("10") @QueryParam("size") int size,
+            @Context UriInfo uriInfo) {
+
+        var response = ratingPolicyService.getAllRatingPolicies(installationId, page, size, uriInfo);
+
+        return Response.ok(response).build();
+    }
+
+    public static class PageableRatingPolicyResponseDto extends PageResource<RatingPolicyResponseDto> {
+
+        private List<RatingPolicyResponseDto> content;
+
+        @Override
+        public List<RatingPolicyResponseDto> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<RatingPolicyResponseDto> content) {
+            this.content = content;
+        }
     }
 }

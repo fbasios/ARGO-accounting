@@ -5,6 +5,7 @@ import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
 import io.quarkus.mongodb.panache.PanacheMongoRepositoryBase;
+import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.grnet.creditmanagement.entities.RatingPolicyEntity;
@@ -64,5 +65,16 @@ public class RatingPolicyRepository implements PanacheMongoRepositoryBase<Rating
         return mongoCollection()
                 .aggregate(List.of(match, sort, group, replaceRoot), RatingPolicyEntity.class)
                 .into(new ArrayList<>());
+    }
+
+    /**
+     * Returns a page of all RatingPolicy entries for the given installation,
+     * across all metric definitions, ordered by metric_definition_id then
+     * valid_from ascending. page is 1-based.
+     */
+    public PanacheQuery<RatingPolicyEntity> findByInstallation(String installationId, int page, int size) {
+
+        return find("installationId = ?1", Sort.by("metricDefinitionId").and("validFrom"), installationId)
+                .page(page - 1, size);
     }
 }
