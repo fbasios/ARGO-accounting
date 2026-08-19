@@ -3,6 +3,8 @@ package org.grnet.creditmanagement.services;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
+import org.bson.types.ObjectId;
+import org.grnet.creditmanagement.dtos.CurrentRatingPolicyEntryDto;
 import org.grnet.creditmanagement.dtos.RatingPolicyRequestDto;
 import org.grnet.creditmanagement.dtos.RatingPolicyResponseDto;
 import org.grnet.creditmanagement.entities.RatingPolicyEntity;
@@ -10,6 +12,9 @@ import org.grnet.creditmanagement.exceptions.RatingPolicyBeforeEarliestException
 import org.grnet.creditmanagement.exceptions.RatingPolicyConflictException;
 import org.grnet.creditmanagement.repositories.ExternalEntityLookupRepository;
 import org.grnet.creditmanagement.repositories.RatingPolicyRepository;
+
+import java.time.Instant;
+import java.util.List;
 
 @ApplicationScoped
 public class RatingPolicyService {
@@ -47,6 +52,7 @@ public class RatingPolicyService {
                 });
 
         var entity = new RatingPolicyEntity();
+        entity.setId(new ObjectId().toString());
         entity.setInstallationId(installationId);
         entity.setMetricDefinitionId(metricDefinitionId);
         entity.setValidFrom(request.validFrom);
@@ -62,5 +68,22 @@ public class RatingPolicyService {
         response.rate = entity.getRate();
 
         return response;
+    }
+
+    public List<CurrentRatingPolicyEntryDto> getCurrentRatingPolicies(String installationId) {
+
+        externalEntityLookupRepository.assertInstallationExists(installationId);
+
+        var currentEntries = ratingPolicyRepository.findCurrentEffectiveRates(installationId, Instant.now());
+
+        return currentEntries.stream()
+                .map(entity -> {
+                    var dto = new CurrentRatingPolicyEntryDto();
+                    dto.metricDefinitionId = entity.getMetricDefinitionId();
+                    dto.rate = entity.getRate();
+                    dto.validFrom = entity.getValidFrom();
+                    return dto;
+                })
+                .toList();
     }
 }
