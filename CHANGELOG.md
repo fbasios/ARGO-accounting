@@ -29,12 +29,13 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
 ## Unreleased - Added
 
 - [#290](https://github.com/ARGOeu/argo-accounting/pull/290) - ACC-1873 Make
-- credit management module optional via Maven profile.
+  credit management module optional via Maven profile.
 - [#291](https://github.com/ARGOeu/argo-accounting/pull/291) - ACC-1866 Add
-- rate-policy endpoint for installation metrics.
+  rate-policy endpoint for installation metrics.
 - [#292](https://github.com/ARGOeu/argo-accounting/pull/292) - ACC-1867 Get
-- Current Rates for an Installation.
-
+  Current Rates for an Installation.
+- [#293](https://github.com/ARGOeu/argo-accounting/pull/293) - ACC-1868 List
+  All Rate Policy Entries for an Installation.
 
 ## 1.8.1 - 2025-12-09
 

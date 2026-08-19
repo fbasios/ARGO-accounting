@@ -3,6 +3,7 @@ package org.grnet.creditmanagement.services;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.UriInfo;
 import org.bson.types.ObjectId;
 import org.grnet.creditmanagement.dtos.CurrentRatingPolicyEntryDto;
 import org.grnet.creditmanagement.dtos.RatingPolicyRequestDto;
@@ -10,6 +11,7 @@ import org.grnet.creditmanagement.dtos.RatingPolicyResponseDto;
 import org.grnet.creditmanagement.entities.RatingPolicyEntity;
 import org.grnet.creditmanagement.exceptions.RatingPolicyBeforeEarliestException;
 import org.grnet.creditmanagement.exceptions.RatingPolicyConflictException;
+import org.grnet.creditmanagement.pagination.PageResource;
 import org.grnet.creditmanagement.repositories.ExternalEntityLookupRepository;
 import org.grnet.creditmanagement.repositories.RatingPolicyRepository;
 
@@ -85,5 +87,33 @@ public class RatingPolicyService {
                     return dto;
                 })
                 .toList();
+    }
+
+    public PageResource<RatingPolicyResponseDto> getAllRatingPolicies(String installationId,
+                                                                      int page,
+                                                                      int size,
+                                                                      UriInfo uriInfo) {
+
+        externalEntityLookupRepository.assertInstallationExists(installationId);
+
+        var entries = ratingPolicyRepository.findByInstallation(installationId, page, size);
+
+        var content = entries
+                .stream()
+                .map(this::toResponseDto)
+                .toList();
+
+        return new PageResource<>(entries, content, uriInfo);
+    }
+
+    private RatingPolicyResponseDto toResponseDto(RatingPolicyEntity entity) {
+
+        var response = new RatingPolicyResponseDto();
+        response.id = entity.getId();
+        response.installationId = entity.getInstallationId();
+        response.metricDefinitionId = entity.getMetricDefinitionId();
+        response.validFrom = entity.getValidFrom();
+        response.rate = entity.getRate();
+        return response;
     }
 }
