@@ -1,11 +1,17 @@
 package org.grnet.creditmanagement.repositories;
 
+import com.mongodb.client.model.Accumulators;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
 import io.quarkus.mongodb.panache.PanacheMongoRepositoryBase;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.grnet.creditmanagement.entities.RatingPolicyEntity;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @ApplicationScoped
@@ -29,5 +35,34 @@ public class RatingPolicyRepository implements PanacheMongoRepositoryBase<Rating
                 installationId, metricDefinitionId)
                 .firstResultOptional()
                 .map(RatingPolicyEntity::getValidFrom);
+    }
+
+    /**
+     * Returns, for the given installation, one RatingPolicyEntity per
+     * metric_definition_id: the entry with the latest valid_from that is
+     * less than or equal to the given point in time. Metric definitions
+     * with no entry at or before that time are simply absent from the
+     * result.
+     *
+     * This is a raw aggregation pipeline (bypasses PanacheQL), so field
+     * names here MUST match the actual BSON field names as declared via
+     * @BsonProperty on the entity (snake_case), not the Java field names.
+     */
+    public List<RatingPolicyEntity> findCurrentEffectiveRates(String installationId, Instant asOf) {
+
+        var match = Aggregates.match(Filters.and(
+                Filters.eq("installation_id", installationId),
+                Filters.lte("valid_from", asOf)
+        ));
+
+        var sort = Aggregates.sort(Sorts.descending("valid_from"));
+
+        var group = Aggregates.group("$metric_definition_id", Accumulators.first("doc", "$$ROOT"));
+
+        var replaceRoot = Aggregates.replaceRoot("$doc");
+
+        return mongoCollection()
+                .aggregate(List.of(match, sort, group, replaceRoot), RatingPolicyEntity.class)
+                .into(new ArrayList<>());
     }
 }

@@ -5,6 +5,7 @@ import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -23,6 +24,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.grnet.creditmanagement.dtos.CurrentRatingPolicyEntryDto;
 import org.grnet.creditmanagement.dtos.RatingPolicyRequestDto;
 import org.grnet.creditmanagement.dtos.RatingPolicyResponseDto;
 import org.grnet.creditmanagement.exceptions.RatingPolicyConflictExceptionMapper;
@@ -99,6 +101,41 @@ public class RatingPolicyEndpoint {
             @Valid @NotNull RatingPolicyRequestDto request) {
 
         var response = ratingPolicyService.createRatingPolicy(installationId, metricDefinitionId, request);
+
+        return Response.ok(response).build();
+    }
+
+    @Tag(name = "Credit Management")
+    @Operation(
+            summary = "Retrieve the currently effective rates for an Installation.",
+            description = "Returns, for the given Installation, one Rating Policy entry per metric_definition_id: " +
+                    "for each metric_definition_id that has ever had an entry, the entry with the latest " +
+                    "valid_from that is less than or equal to the current time. If a metric_definition_id has " +
+                    "no entry with valid_from less than or equal to the current time, it is simply absent from " +
+                    "the response rather than causing an error, reflecting that it is currently unrated.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The list of currently effective Rating Policy entries for the Installation. " +
+                    "May be empty if no metric has ever been rated on this Installation.",
+            content = @Content(schema = @Schema(type = SchemaType.ARRAY, implementation = CurrentRatingPolicyEntryDto.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Installation does not exist.",
+            content = @Content(schema = @Schema(implementation = RatingPolicyConflictExceptionMapper.ErrorResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(implementation = RatingPolicyConflictExceptionMapper.ErrorResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{installation_id}/rate-policies/current")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getCurrentRatingPolicies(
+            @Parameter(name = "installation_id", in = PATH, description = "The installation id.", required = true,
+                    schema = @Schema(type = SchemaType.STRING, implementation = String.class, example = "707f1f77bcf86cd799439013"))
+            @PathParam("installation_id") String installationId) {
+
+        var response = ratingPolicyService.getCurrentRatingPolicies(installationId);
 
         return Response.ok(response).build();
     }
