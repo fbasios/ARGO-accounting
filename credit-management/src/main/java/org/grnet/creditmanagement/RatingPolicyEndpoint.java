@@ -64,7 +64,8 @@ public class RatingPolicyEndpoint {
                     "effective end is implicitly determined by whichever entry (if any) has the next later " +
                     "valid_from for the same Installation and Metric Definition. Submitting a rate for a metric " +
                     "that has never been rated on this Installation before starts rating it from valid_from " +
-                    "onward. Inserting an entry with a valid_from between two existing entries effectively " +
+                    "onward. The given valid_from is automatically rounded down to the start of the day (00:00:00 UTC) " +
+                    "before being stored. Inserting an entry with a valid_from between two existing entries effectively " +
                     "shortens the preceding entry's derived effective period; inserting one later than the most " +
                     "recent existing entry effectively closes that entry's open-ended period as of the new " +
                     "valid_from. A valid_from earlier than the earliest already recorded entry for the same " +
@@ -76,9 +77,10 @@ public class RatingPolicyEndpoint {
             content = @Content(schema = @Schema(type = SchemaType.OBJECT, implementation = RatingPolicyResponseDto.class)))
     @APIResponse(
             responseCode = "400",
-            description = "A Rating Policy with the exact same valid_from already exists for this Installation " +
-                    "and Metric Definition, or the given valid_from is earlier than the earliest already " +
-                    "recorded valid_from for this Installation and Metric Definition.",
+            description = "The request is invalid: valid_from is not at the start of a day (00:00:00 UTC), " +
+                    "an entry with the exact same valid_from already exists for this Installation and Metric " +
+                    "Definition, or the given valid_from is earlier than the earliest already recorded " +
+                    "valid_from for this Installation and Metric Definition.",
             content = @Content(schema = @Schema(type = SchemaType.OBJECT, implementation = RatingPolicyConflictExceptionMapper.ErrorResponse.class)))
     @APIResponse(
             responseCode = "404",
