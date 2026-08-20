@@ -86,4 +86,37 @@ public class RatingPolicyRepository implements PanacheMongoRepositoryBase<Rating
 
         return findByIdOptional(policyId);
     }
+
+    /**
+     * All Rating Policy entries for the given installation and metric
+     * definition, ordered by valid_from ascending — including entries
+     * outside any particular reporting window, since the earliest ones
+     * are needed to determine which rate was active at the start of a
+     * window.
+     */
+    public List<RatingPolicyEntity> findAllOrderedByValidFrom(String installationId, String metricDefinitionId) {
+
+        return find("installationId = ?1 and metricDefinitionId = ?2", Sort.by("validFrom"),
+                installationId, metricDefinitionId)
+                .list();
+    }
+
+    /**
+     * Distinct metric_definition_ids that have at least one Rating Policy
+     * entry on the given installation, optionally restricted to a single
+     * metric_definition_id.
+     */
+    public List<String> findDistinctMetricDefinitionIds(String installationId, String metricDefinitionIdFilter) {
+
+        var filters = new ArrayList<org.bson.conversions.Bson>();
+        filters.add(Filters.eq("installation_id", installationId));
+
+        if (metricDefinitionIdFilter != null) {
+            filters.add(Filters.eq("metric_definition_id", metricDefinitionIdFilter));
+        }
+
+        return mongoCollection()
+                .distinct("metric_definition_id", Filters.and(filters), String.class)
+                .into(new ArrayList<>());
+    }
 }

@@ -17,6 +17,7 @@ import org.grnet.creditmanagement.repositories.ExternalEntityLookupRepository;
 import org.grnet.creditmanagement.repositories.RatingPolicyRepository;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @ApplicationScoped
@@ -33,6 +34,8 @@ public class RatingPolicyService {
                                                       String metricDefinitionId,
                                                       RatingPolicyRequestDto request) {
 
+
+        var validFrom = request.validFrom.truncatedTo(ChronoUnit.DAYS);
 
         externalEntityLookupRepository.assertInstallationExists(installationId);
 
@@ -58,7 +61,7 @@ public class RatingPolicyService {
         entity.setId(new ObjectId().toString());
         entity.setInstallationId(installationId);
         entity.setMetricDefinitionId(metricDefinitionId);
-        entity.setValidFrom(request.validFrom);
+        entity.setValidFrom(validFrom);
         entity.setRate(request.rate);
 
         ratingPolicyRepository.persist(entity);

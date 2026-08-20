@@ -14,9 +14,10 @@ public class RatingPolicyRequestDto {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The date from which this rate becomes effective. No end date is accepted; " +
-                    "the effective end is implicitly determined by the next later valid_from entry, if any, " +
-                    "for the same Installation and Metric Definition.",
+            description = "The date from which this rate becomes effective. Automatically rounded down to " +
+                    "the start of the day (00:00:00 UTC), since Rating Policies apply per calendar day. " +
+                    "No end date is accepted; the effective end is implicitly determined by the next later " +
+                    "valid_from entry, if any, for the same Installation and Metric Definition.",
             example = "2026-08-01T00:00:00Z",
             required = true
     )
