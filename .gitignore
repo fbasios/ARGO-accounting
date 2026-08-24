@@ -42,3 +42,9 @@ nb-configuration.xml
 /node_modules
 
 .java-version
+
+.mcp.json
+
+CLAUDE.md
+
+.claude

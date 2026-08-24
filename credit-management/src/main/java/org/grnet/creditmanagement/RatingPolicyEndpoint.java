@@ -111,7 +111,7 @@ public class RatingPolicyEndpoint {
             @PathParam("metric_definition_id") String metricDefinitionId,
             @RequestBody(description = "The valid_from date and rate to apply.",
                     content = @Content(schema = @Schema(implementation = RatingPolicyRequestDto.class)))
-            @Valid @NotNull RatingPolicyRequestDto request) {
+            @Valid @NotNull(message = "The request body is empty.") RatingPolicyRequestDto request) {
 
         var response = ratingPolicyService.createRatingPolicy(installationId, metricDefinitionId, request);
 
@@ -229,7 +229,7 @@ public class RatingPolicyEndpoint {
 
             @RequestBody(description = "The new rate to apply.", required = true,
                     content = @Content(schema = @Schema(implementation = RatingPolicyUpdateRequestDto.class)))
-            @Valid RatingPolicyUpdateRequestDto request) {
+            @Valid @NotNull(message = "The request body is empty.") RatingPolicyUpdateRequestDto request) {
 
         var response = ratingPolicyService.updateRatingPolicy(policyId, request);
 

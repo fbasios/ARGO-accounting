@@ -40,6 +40,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
   Rate for a Single Metric Definition on an Installation.
 - [#295](https://github.com/ARGOeu/argo-accounting/pull/295) - ACC-1869 Credit
   Usage Report Across Installations for a Time Range.
+- [#296](https://github.com/ARGOeu/argo-accounting/pull/296) - ACC-1871 Create
+  Credit Allocation.
 
 ## 1.8.1 - 2025-12-09
 
