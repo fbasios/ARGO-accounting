@@ -15,6 +15,7 @@ import org.grnet.creditmanagement.repositories.CreditAllocationRepository;
 import org.grnet.creditmanagement.repositories.ExternalEntityLookupRepository;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 @ApplicationScoped
 public class CreditAllocationService {
@@ -29,7 +30,10 @@ public class CreditAllocationService {
                                                         String groupId,
                                                         CreditAllocationRequestDto request) {
 
-        if (!request.validFrom.isBefore(request.validTo)) {
+        var validFrom = request.validFrom.truncatedTo(ChronoUnit.DAYS);
+        var validTo = request.validTo.truncatedTo(ChronoUnit.DAYS);
+
+        if (!validFrom.isBefore(validTo)) {
             throw new BadRequestException("valid_from must be strictly earlier than valid_to.");
         }
 
@@ -41,9 +45,9 @@ public class CreditAllocationService {
             throw new NotFoundException("Project not found: " + projectId);
         }
 
-        if (creditAllocationRepository.existsOverlapping(projectId, groupId, request.validFrom, request.validTo)) {
+        if (creditAllocationRepository.existsOverlapping(projectId, groupId, validFrom, validTo)) {
             throw new CreditAllocationOverlapException(
-                    "The requested period [" + request.validFrom + ", " + request.validTo + ") overlaps with an " +
+                    "The requested period [" + validFrom + ", " + validTo + ") overlaps with an " +
                             "existing Credit Allocation for project " + projectId + " and group " + groupId + ".");
         }
 
@@ -52,8 +56,8 @@ public class CreditAllocationService {
         entity.setProjectId(projectId);
         entity.setGroupId(groupId);
         entity.setTotalCredits(request.totalCredits);
-        entity.setValidFrom(request.validFrom);
-        entity.setValidTo(request.validTo);
+        entity.setValidFrom(validFrom);
+        entity.setValidTo(validTo);
 
         creditAllocationRepository.persist(entity);
 

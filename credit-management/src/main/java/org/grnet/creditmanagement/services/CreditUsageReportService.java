@@ -183,7 +183,7 @@ public class CreditUsageReportService {
             var segment = new SegmentDto();
             segment.from = segmentStart;
             segment.to = segmentEnd;
-            segment.pricingPolicyId = applicablePolicy != null ? applicablePolicy.getId() : null;
+            segment.ratingPolicyId = applicablePolicy != null ? applicablePolicy.getId() : null;
             segment.rate = applicablePolicy != null ? applicablePolicy.getRate() : null;
             segment.totalValue = segmentValue;
             segment.credits = segmentCredits;

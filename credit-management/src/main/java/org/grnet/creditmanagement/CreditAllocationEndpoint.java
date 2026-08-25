@@ -48,11 +48,14 @@ public class CreditAllocationEndpoint {
             summary = "Allocate a total number of credits to a group under a project for a specific period.",
             description = "Creates a new Credit Allocation for the given project_id and group_id, granting " +
                     "total_credits to be consumed across all Installations under that project, equally, " +
-                    "during [valid_from, valid_to). Unlike Rating Policy rates, an allocation represents a " +
-                    "closed budget for a bounded period, so both a start and an end date are required. " +
-                    "A stored allocation is never modified; changing an allocation always means creating a " +
-                    "new entry. For a given project_id/group_id pair, allocation periods must never overlap " +
-                    "with each other.")
+                    "during [valid_from, valid_to). Both valid_from and valid_to are automatically rounded " +
+                    "down to the start of the day (00:00:00 UTC), consistent with Rating Policy entries, " +
+                    "since credit accounting in this system is always day-aligned. Unlike Rating Policy rates, " +
+                    "an allocation represents a closed budget for a bounded period, so both a start and an " +
+                    "end date are required. A stored allocation is never modified; changing an allocation " +
+                    "always means creating a new entry. For a given project_id/group_id pair, allocation " +
+                    "periods must never overlap with each other — overlap is checked against the rounded " +
+                    "valid_from/valid_to values.")
     @APIResponse(
             responseCode = "200",
             description = "The Credit Allocation has been successfully created.",

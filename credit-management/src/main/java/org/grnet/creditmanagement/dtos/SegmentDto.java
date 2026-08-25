@@ -15,8 +15,8 @@ public class SegmentDto {
     public Instant to;
 
     @Schema(type = SchemaType.STRING, description = "The Rating Policy entry applicable during this sub-period, or null if no policy was in effect.", example = "64f1a2b3c4d5e6f7a8b9c0d1", nullable = true)
-    @JsonProperty("pricing_policy_id")
-    public String pricingPolicyId;
+    @JsonProperty("rating_policy_id")
+    public String ratingPolicyId;
 
     @Schema(type = SchemaType.NUMBER, description = "The rate applicable during this sub-period, or null if no policy was in effect.", example = "0.5", nullable = true)
     public Double rate;

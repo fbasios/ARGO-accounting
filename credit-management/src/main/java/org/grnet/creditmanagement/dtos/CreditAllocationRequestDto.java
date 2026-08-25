@@ -14,7 +14,8 @@ public class CreditAllocationRequestDto {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The start of the allocation period (inclusive).",
+            description = "The start of the allocation period (inclusive). Automatically rounded down to the " +
+                    "start of the day (00:00:00 UTC).",
             example = "2026-08-01T00:00:00Z",
             required = true
     )
@@ -25,7 +26,8 @@ public class CreditAllocationRequestDto {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The end of the allocation period (exclusive). Must be strictly after valid_from.",
+            description = "The end of the allocation period (exclusive). Automatically rounded down to the " +
+                    "start of the day (00:00:00 UTC). Must be strictly after the rounded valid_from.",
             example = "2026-09-01T00:00:00Z",
             required = true
     )
