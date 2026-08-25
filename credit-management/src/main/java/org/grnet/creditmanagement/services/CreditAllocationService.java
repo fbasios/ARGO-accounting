@@ -4,13 +4,17 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.UriInfo;
 import org.bson.types.ObjectId;
 import org.grnet.creditmanagement.dtos.CreditAllocationRequestDto;
 import org.grnet.creditmanagement.dtos.CreditAllocationResponseDto;
 import org.grnet.creditmanagement.entities.CreditAllocationEntity;
 import org.grnet.creditmanagement.exceptions.CreditAllocationOverlapException;
+import org.grnet.creditmanagement.pagination.PageResource;
 import org.grnet.creditmanagement.repositories.CreditAllocationRepository;
 import org.grnet.creditmanagement.repositories.ExternalEntityLookupRepository;
+
+import java.time.Instant;
 
 @ApplicationScoped
 public class CreditAllocationService {
@@ -56,6 +60,25 @@ public class CreditAllocationService {
         return toResponseDto(entity);
     }
 
+    public CreditAllocationResponseDto getEffectiveAllocation(String projectId, String groupId, Instant at) {
+
+        if (!externalEntityLookupRepository.projectExists(projectId)) {
+            throw new NotFoundException("Project not found: " + projectId);
+        }
+
+        var entity = creditAllocationRepository.findEffectiveAt(projectId, groupId, at)
+                .orElseThrow(() -> new NotFoundException(
+                        "There is no Credit Allocation effective at " + at + " for project " + projectId +
+                                " and group " + groupId + "."));
+
+        return toResponseDto(entity);
+    }
+
+    public CreditAllocationResponseDto getCurrentAllocation(String projectId, String groupId) {
+
+        return getEffectiveAllocation(projectId, groupId, Instant.now());
+    }
+
     private CreditAllocationResponseDto toResponseDto(CreditAllocationEntity entity) {
 
         var response = new CreditAllocationResponseDto();
@@ -66,5 +89,21 @@ public class CreditAllocationService {
         response.validFrom = entity.getValidFrom();
         response.validTo = entity.getValidTo();
         return response;
+    }
+
+    public PageResource<CreditAllocationResponseDto> getAllocationHistory(String projectId, String groupId, int page, int size, UriInfo uriInfo) {
+
+        if (!externalEntityLookupRepository.projectExists(projectId)) {
+            throw new NotFoundException("Project not found: " + projectId);
+        }
+
+        var entries = creditAllocationRepository.findByProjectAndGroupPaged(projectId, groupId, page, size);
+
+        var content = entries
+                .stream()
+                .map(this::toResponseDto)
+                .toList();
+
+        return new PageResource<>(entries, content, uriInfo);
     }
 }
