@@ -57,4 +57,15 @@ public class CreditAllocationRepository implements PanacheMongoRepositoryBase<Cr
         return find("projectId = ?1 and groupId = ?2", Sort.by("validFrom").descending(), projectId, groupId)
                 .page(page - 1, size);
     }
+
+    /**
+     * All stored allocations for the given project_id/group_id that overlap
+     * at all with [from, to).
+     */
+    public List<CreditAllocationEntity> findOverlapping(String projectId, String groupId, Instant from, Instant to) {
+
+        return find("projectId = ?1 and groupId = ?2 and validFrom < ?3 and validTo > ?4",
+                projectId, groupId, to, from)
+                .list();
+    }
 }

@@ -44,6 +44,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
   Credit Allocation.
 - [#297](https://github.com/ARGOeu/argo-accounting/pull/297) - ACC-1872 Get
   Current and Historical Allocations.
+- [#298](https://github.com/ARGOeu/argo-accounting/pull/298) - ACC-1864 Generate
+  Credits Balance Report.
 
 ## 1.8.1 - 2025-12-09
 
