@@ -42,6 +42,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
   Usage Report Across Installations for a Time Range.
 - [#296](https://github.com/ARGOeu/argo-accounting/pull/296) - ACC-1871 Create
   Credit Allocation.
+- [#297](https://github.com/ARGOeu/argo-accounting/pull/297) - ACC-1872 Get
+  Current and Historical Allocations.
 
 ## 1.8.1 - 2025-12-09
 
