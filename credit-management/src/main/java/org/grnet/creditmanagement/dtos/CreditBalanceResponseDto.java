@@ -25,7 +25,7 @@ public class CreditBalanceResponseDto {
     @Schema(type = SchemaType.STRING, description = "The resolved end instant of the window (exclusive).", example = "2026-09-01T00:00:00Z")
     public Instant to;
 
-    @Schema(type = SchemaType.NUMBER, description = "The credits allocated to this group during the window, prorated across allocation periods that partially overlap the window.", example = "764.5")
+    @Schema(type = SchemaType.NUMBER, description = "The total_credits of every Credit Allocation for this group whose period overlaps the requested window, summed in full (not prorated).", example = "1500.0")
     @JsonProperty("allocated_credits")
     public double allocatedCredits;
 

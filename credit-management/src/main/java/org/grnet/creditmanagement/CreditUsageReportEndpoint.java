@@ -52,14 +52,14 @@ public class CreditUsageReportEndpoint {
             description = "For every Installation under the given Project (optionally scoped to a single " +
                     "installation) and for every Metric Definition rated or reported on that Installation, " +
                     "returns the total consumed metric value and the corresponding credits within the " +
-                    "reporting window, broken down into sub-periods whenever the applicable Rating Policy " +
+                    "reporting window, broken down into sub-periods whenever the applicable Rate Policy " +
                     "rate changed during the range, including sub-periods where no policy was in effect. " +
                     "The window runs from the start of 'from' (inclusive) to the end of 'to' (inclusive), " +
-                    "both given as calendar dates, since Rating Policies always take effect at the start of " +
+                    "both given as calendar dates, since Rate Policies always take effect at the start of " +
                     "a day and Metric events are daily. The optional user_id and/or group_id filters scope " +
                     "the underlying metric events included in the aggregation; when both are provided, " +
                     "events must match both. Installations or Metric Definitions with no events and no " +
-                    "Rating Policy entries at all within scope are omitted from the response.")
+                    "Rate Policy entries at all within scope are omitted from the response.")
     @APIResponse(
             responseCode = "200",
             description = "The credit usage report.",
@@ -120,8 +120,9 @@ public class CreditUsageReportEndpoint {
     @Tag(name = "Credit Management")
     @Operation(
             summary = "Retrieve the credit balance of a group under a project over a time range.",
-            description = "Returns allocated_credits (the sum of this group's Credit Allocations, prorated " +
-                    "by overlap with the given window), consumed_credits (the total credits accrued by this " +
+            description = "Returns allocated_credits (the sum of the full total_credits of every Credit Allocation for this " +
+                    "group whose period overlaps the given window — not prorated, since an allocation represents a " +
+                    "closed budget for its whole period), consumed_credits (the total credits accrued by this " +
                     "group across every Installation under the project during the window), balance " +
                     "(allocated_credits - consumed_credits), and the full per-Installation, per-Metric-Definition " +
                     "consumption breakdown backing consumed_credits — in the same shape as the credit usage " +

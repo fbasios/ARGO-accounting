@@ -60,7 +60,7 @@ public class RatingPolicyEndpoint {
     @Tag(name = "Credit Management")
     @Operation(
             summary = "Submit a rate for a metric on an Installation.",
-            description = "Creates a new Rating Policy entry for the given Installation and Metric Definition, " +
+            description = "Creates a new Rate Policy entry for the given Installation and Metric Definition, " +
                     "effective from the given valid_from date. No end date is accepted or stored — the entry's " +
                     "effective end is implicitly determined by whichever entry (if any) has the next later " +
                     "valid_from for the same Installation and Metric Definition. Submitting a rate for a metric " +
@@ -74,7 +74,7 @@ public class RatingPolicyEndpoint {
                     "start of a rating history that may have already been reported on.")
     @APIResponse(
             responseCode = "200",
-            description = "The Rating Policy has been successfully created.",
+            description = "The Rate Policy has been successfully created.",
             content = @Content(schema = @Schema(type = SchemaType.OBJECT, implementation = RatingPolicyResponseDto.class)))
     @APIResponse(
             responseCode = "400",
@@ -123,14 +123,14 @@ public class RatingPolicyEndpoint {
     @Tag(name = "Credit Management")
     @Operation(
             summary = "Retrieve the currently effective rates for an Installation.",
-            description = "Returns, for the given Installation, one Rating Policy entry per metric_definition_id: " +
+            description = "Returns, for the given Installation, one Rate Policy entry per metric_definition_id: " +
                     "for each metric_definition_id that has ever had an entry, the entry with the latest " +
                     "valid_from that is less than or equal to the current time. If a metric_definition_id has " +
                     "no entry with valid_from less than or equal to the current time, it is simply absent from " +
                     "the response rather than causing an error, reflecting that it is currently unrated.")
     @APIResponse(
             responseCode = "200",
-            description = "The list of currently effective Rating Policy entries for the Installation. " +
+            description = "The list of currently effective Rate Policy entries for the Installation. " +
                     "May be empty if no metric has ever been rated on this Installation.",
             content = @Content(schema = @Schema(type = SchemaType.ARRAY, implementation = CurrentRatingPolicyEntryDto.class)))
     @APIResponse(
@@ -159,13 +159,13 @@ public class RatingPolicyEndpoint {
     @Tag(name = "Credit Management")
     @Operation(
             summary = "List all Rate Policies for an Installation.",
-            description = "Returns a paginated list of all Rating Policy entries recorded for the given " +
+            description = "Returns a paginated list of all Rate Policy entries recorded for the given " +
                     "Installation, across all metric definitions, ordered by metric_definition_id and then " +
-                    "valid_from. If the Installation exists but has no Rating Policy entries at all, an empty " +
+                    "valid_from. If the Installation exists but has no Rate Policy entries at all, an empty " +
                     "paginated result is returned rather than an error.")
     @APIResponse(
             responseCode = "200",
-            description = "A paginated list of Rating Policy entries for the Installation.",
+            description = "A paginated list of Rate Policy entries for the Installation.",
             content = @Content(schema = @Schema(type = SchemaType.OBJECT, implementation = PageableRatingPolicyResponseDto.class)))
     @APIResponse(
             responseCode = "404",
@@ -201,13 +201,13 @@ public class RatingPolicyEndpoint {
 
     @Tag(name = "Credit Management")
     @Operation(
-            summary = "Update the rate of an existing Rating Policy entry.",
-            description = "Updates the rate of the Rating Policy entry identified by policy_id, for the given " +
+            summary = "Update the rate of an existing Rate Policy entry.",
+            description = "Updates the rate of the Rate Policy entry identified by policy_id, for the given " +
                     "Installation and Metric Definition. Only the rate can be updated — the valid_from date of " +
                     "the entry cannot be changed through this endpoint.")
     @APIResponse(
             responseCode = "200",
-            description = "The Rating Policy entry has been successfully updated.",
+            description = "The Rate Policy entry has been successfully updated.",
             content = @Content(schema = @Schema(type = SchemaType.OBJECT, implementation = RatingPolicyResponseDto.class)))
     @APIResponse(
             responseCode = "400",
@@ -215,8 +215,8 @@ public class RatingPolicyEndpoint {
             content = @Content(schema = @Schema(type = SchemaType.OBJECT, implementation = RatingPolicyConflictExceptionMapper.ErrorResponse.class)))
     @APIResponse(
             responseCode = "404",
-            description = "The Installation, Metric Definition, or Rating Policy entry does not exist, or the " +
-                    "Rating Policy entry does not belong to the given Installation and Metric Definition.",
+            description = "The Installation, Metric Definition, or Rate Policy entry does not exist, or the " +
+                    "Rate Policy entry does not belong to the given Installation and Metric Definition.",
             content = @Content(schema = @Schema(type = SchemaType.OBJECT, implementation = RatingPolicyConflictExceptionMapper.ErrorResponse.class)))
     @APIResponse(
             responseCode = "500",
@@ -228,7 +228,7 @@ public class RatingPolicyEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @CreditManagementSecured
     public Response updateRatingPolicy(
-            @Parameter(name = "policy_id", in = PATH, description = "The Rating Policy entry id.", required = true,
+            @Parameter(name = "policy_id", in = PATH, description = "The Rate Policy entry id.", required = true,
                     schema = @Schema(type = SchemaType.STRING, implementation = String.class, example = "64f1a2b3c4d5e6f7a8b9c0d1"))
             @PathParam("policy_id") String policyId,
 

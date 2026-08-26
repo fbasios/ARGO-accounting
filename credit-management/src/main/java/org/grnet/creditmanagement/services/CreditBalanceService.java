@@ -5,6 +5,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 import org.grnet.creditmanagement.dtos.CreditBalanceResponseDto;
+import org.grnet.creditmanagement.entities.CreditAllocationEntity;
 import org.grnet.creditmanagement.repositories.CreditAllocationRepository;
 import org.grnet.creditmanagement.repositories.ExternalEntityLookupRepository;
 
@@ -76,36 +77,17 @@ public class CreditBalanceService {
     }
 
     /**
-     * Sums each overlapping allocation's total_credits, prorated by the
-     * fraction of that allocation's own [valid_from, valid_to) period that
-     * falls inside [from, to).
+     * Sums the full total_credits of every allocation whose period overlaps
+     * [from, to) at all — no proration. An allocation represents a closed
+     * budget for its whole period; if it overlaps the requested window even
+     * partially, its entire budget is counted as allocated for that window.
      */
     private double computeAllocatedCredits(String projectId, String groupId, Instant from, Instant to) {
 
         var allocations = creditAllocationRepository.findOverlapping(projectId, groupId, from, to);
 
-        double sum = 0;
-
-        for (var allocation : allocations) {
-
-            var overlapStart = allocation.getValidFrom().isAfter(from) ? allocation.getValidFrom() : from;
-            var overlapEnd = allocation.getValidTo().isBefore(to) ? allocation.getValidTo() : to;
-
-            if (overlapStart.isBefore(overlapEnd)) {
-
-                var allocationDurationMillis = allocation.getValidTo().toEpochMilli() - allocation.getValidFrom().toEpochMilli();
-
-                if (allocationDurationMillis <= 0) {
-                    continue;
-                }
-
-                var overlapMillis = overlapEnd.toEpochMilli() - overlapStart.toEpochMilli();
-                var fraction = (double) overlapMillis / allocationDurationMillis;
-
-                sum += allocation.getTotalCredits() * fraction;
-            }
-        }
-
-        return sum;
+        return allocations.stream()
+                .mapToDouble(CreditAllocationEntity::getTotalCredits)
+                .sum();
     }
 }
