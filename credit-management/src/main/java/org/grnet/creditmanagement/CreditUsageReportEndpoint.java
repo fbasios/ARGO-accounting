@@ -24,6 +24,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.creditmanagement.dtos.CreditBalanceResponseDto;
 import org.grnet.creditmanagement.dtos.CreditUsageReportResponseDto;
 import org.grnet.creditmanagement.exceptions.RatingPolicyConflictExceptionMapper;
+import org.grnet.creditmanagement.security.CreditManagementSecured;
 import org.grnet.creditmanagement.services.CreditBalanceService;
 import org.grnet.creditmanagement.services.CreditUsageReportService;
 
@@ -80,6 +81,7 @@ public class CreditUsageReportEndpoint {
     @GET
     @Path("/{project_id}/reports/credit-usage")
     @Produces(MediaType.APPLICATION_JSON)
+    @CreditManagementSecured
     public Response getCreditUsageReport(
 
             @Parameter(name = "project_id", in = ParameterIn.PATH, description = "The project id.", required = true,
@@ -145,6 +147,7 @@ public class CreditUsageReportEndpoint {
     @GET
     @Path("/{project_id}/groups/{group_id}/balance")
     @Produces(MediaType.APPLICATION_JSON)
+    @CreditManagementSecured
     public Response getBalance(
 
             @Parameter(name = "project_id", in = ParameterIn.PATH, description = "The project id.", required = true,

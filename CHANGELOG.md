@@ -46,6 +46,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
   Current and Historical Allocations.
 - [#298](https://github.com/ARGOeu/argo-accounting/pull/298) - ACC-1864 Generate
   Credits Balance Report.
+- [#298](https://github.com/ARGOeu/argo-accounting/pull/298) - ACC-1874 Runtime
+  Per-Project Enablement of Credit Management.
 
 ## 1.8.1 - 2025-12-09
 
