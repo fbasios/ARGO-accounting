@@ -5,6 +5,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
+import com.mongodb.client.model.Updates;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
@@ -17,6 +18,8 @@ import org.grnet.creditmanagement.usage.InstallationRef;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 @ApplicationScoped
 public class ExternalEntityLookupRepository {
@@ -26,6 +29,8 @@ public class ExternalEntityLookupRepository {
 
     @ConfigProperty(name = "quarkus.mongodb.database")
     String database;
+
+    public static final String PATH_SEPARATOR = ".";
 
 
     /**
@@ -104,5 +109,66 @@ public class ExternalEntityLookupRepository {
 
     private MongoCollection<Document> getMetricDefinitionCollection() {
         return mongoClient.getDatabase(database).getCollection("MetricDefinition");
+    }
+
+    /**
+     * Whether Credit Management is enabled for the given project, per the
+     * project's credit_management_enabled flag. Defaults to false if the
+     * field is absent (e.g. for projects created before this flag existed)
+     * or if the project itself doesn't exist.
+     */
+    public boolean isCreditManagementEnabled(String projectId) {
+
+        var project = getProjectCollection()
+                .find(Filters.eq("_id", projectId))
+                .projection(Projections.include("credit_management_enabled"))
+                .first();
+
+        if (project == null) {
+            return false;
+        }
+
+        return project.getBoolean("credit_management_enabled", false);
+    }
+
+    /**
+     * Resolves the project_id that owns the given installation, via the
+     * HierarchicalRelation lookup (id = projectId/providerId/installationId).
+     * Used by endpoints whose path only carries installation_id, not
+     * project_id directly.
+     */
+    public Optional<String> resolveProjectIdForInstallation(String installationId) {
+
+        var relation = getHierarchicalRelationCollection()
+                .find(Filters.eq("externalId", installationId))
+                .first();
+
+        if (relation == null) {
+            return Optional.empty();
+        }
+
+        var id = relation.getString("_id");
+        var parts = id.split(Pattern.quote(PATH_SEPARATOR));
+
+        if (parts.length < 1) {
+            return Optional.empty();
+        }
+
+        return Optional.of(parts[0]);
+    }
+
+    /**
+     * Sets the credit_management_enabled flag on the given project. Returns
+     * false if the project does not exist (no document matched), true if the
+     * update was applied.
+     */
+    public boolean setCreditManagementEnabled(String projectId, boolean enabled) {
+
+        var result = getProjectCollection().updateOne(
+                Filters.eq("_id", projectId),
+                Updates.set("credit_management_enabled", enabled)
+        );
+
+        return result.getMatchedCount() > 0;
     }
 }

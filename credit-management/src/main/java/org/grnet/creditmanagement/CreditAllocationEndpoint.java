@@ -32,6 +32,7 @@ import org.grnet.creditmanagement.dtos.CreditAllocationRequestDto;
 import org.grnet.creditmanagement.dtos.CreditAllocationResponseDto;
 import org.grnet.creditmanagement.exceptions.RatingPolicyConflictExceptionMapper;
 import org.grnet.creditmanagement.pagination.PageResource;
+import org.grnet.creditmanagement.security.CreditManagementSecured;
 import org.grnet.creditmanagement.services.CreditAllocationService;
 
 import java.time.Instant;
@@ -79,6 +80,7 @@ public class CreditAllocationEndpoint {
     @Path("/{project_id}/groups/{group_id}/allocations")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @CreditManagementSecured
     public Response createAllocation(
 
             @Parameter(name = "project_id", in = ParameterIn.PATH, description = "The project id.", required = true,
@@ -124,6 +126,7 @@ public class CreditAllocationEndpoint {
     @GET
     @Path("/{project_id}/groups/{group_id}/allocations/effective")
     @Produces(MediaType.APPLICATION_JSON)
+    @CreditManagementSecured
     public Response getEffectiveAllocation(
             @Parameter(name = "project_id", in = ParameterIn.PATH, description = "The project id.", required = true,
                     schema = @Schema(type = SchemaType.STRING, implementation = String.class, example = "707f1f77bcf86cd799439011"))
@@ -167,6 +170,7 @@ public class CreditAllocationEndpoint {
     @GET
     @Path("/{project_id}/groups/{group_id}/allocations/current")
     @Produces(MediaType.APPLICATION_JSON)
+    @CreditManagementSecured
     public Response getCurrentAllocation(
             @Parameter(name = "project_id", in = ParameterIn.PATH, description = "The project id.", required = true,
                     schema = @Schema(type = SchemaType.STRING, implementation = String.class, example = "707f1f77bcf86cd799439011"))
@@ -203,6 +207,7 @@ public class CreditAllocationEndpoint {
     @GET
     @Path("/{project_id}/groups/{group_id}/allocations/history")
     @Produces(MediaType.APPLICATION_JSON)
+    @CreditManagementSecured
     public Response getAllocationHistory(
             @Parameter(name = "project_id", in = ParameterIn.PATH, description = "The project id.", required = true,
                     schema = @Schema(type = SchemaType.STRING, implementation = String.class, example = "707f1f77bcf86cd799439011"))

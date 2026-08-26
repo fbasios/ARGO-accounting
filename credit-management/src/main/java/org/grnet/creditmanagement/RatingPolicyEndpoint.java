@@ -37,6 +37,7 @@ import org.grnet.creditmanagement.dtos.RatingPolicyResponseDto;
 import org.grnet.creditmanagement.dtos.RatingPolicyUpdateRequestDto;
 import org.grnet.creditmanagement.exceptions.RatingPolicyConflictExceptionMapper;
 import org.grnet.creditmanagement.pagination.PageResource;
+import org.grnet.creditmanagement.security.CreditManagementSecured;
 import org.grnet.creditmanagement.services.RatingPolicyService;
 
 import java.util.List;
@@ -95,6 +96,7 @@ public class RatingPolicyEndpoint {
     @Path("/{installation_id}/metrics/{metric_definition_id}/rate-policy")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @CreditManagementSecured
     public Response submitRatingPolicy(@Parameter(
             name = "installation_id",
             in = PATH,
@@ -143,6 +145,7 @@ public class RatingPolicyEndpoint {
     @GET
     @Path("/{installation_id}/rate-policies/current")
     @Produces(MediaType.APPLICATION_JSON)
+    @CreditManagementSecured
     public Response getCurrentRatingPolicies(
             @Parameter(name = "installation_id", in = PATH, description = "The installation id.", required = true,
                     schema = @Schema(type = SchemaType.STRING, implementation = String.class, example = "707f1f77bcf86cd799439013"))
@@ -176,6 +179,7 @@ public class RatingPolicyEndpoint {
     @GET
     @Path("/installations/{installation_id}/rate-policies")
     @Produces(MediaType.APPLICATION_JSON)
+    @CreditManagementSecured
     public Response listRatingPolicies(
             @Parameter(name = "installation_id", in = PATH, description = "The installation id.", required = true,
                     schema = @Schema(type = SchemaType.STRING, implementation = String.class, example = "707f1f77bcf86cd799439013"))
@@ -222,12 +226,13 @@ public class RatingPolicyEndpoint {
     @Path("/rate-policies/{policy_id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @CreditManagementSecured
     public Response updateRatingPolicy(
             @Parameter(name = "policy_id", in = PATH, description = "The Rating Policy entry id.", required = true,
                     schema = @Schema(type = SchemaType.STRING, implementation = String.class, example = "64f1a2b3c4d5e6f7a8b9c0d1"))
             @PathParam("policy_id") String policyId,
 
-            @RequestBody(description = "The new rate to apply.", required = true,
+            @RequestBody(description = "The new rate to apply.",
                     content = @Content(schema = @Schema(implementation = RatingPolicyUpdateRequestDto.class)))
             @Valid @NotNull(message = "The request body is empty.") RatingPolicyUpdateRequestDto request) {
 

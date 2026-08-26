@@ -30,6 +30,9 @@ public class Project extends Entity{
     @BsonProperty("registered_on")
     private LocalDateTime registeredOn;
 
+    @BsonProperty("credit_management_enabled")
+    private boolean creditManagementEnabled = false;
+
     public String getId() {
         return id;
     }
@@ -84,5 +87,13 @@ public class Project extends Entity{
 
     public void setRegisteredOn(LocalDateTime registeredOn) {
         this.registeredOn = registeredOn;
+    }
+
+    public boolean isCreditManagementEnabled() {
+        return creditManagementEnabled;
+    }
+
+    public void setCreditManagementEnabled(boolean creditManagementEnabled) {
+        this.creditManagementEnabled = creditManagementEnabled;
     }
 }
