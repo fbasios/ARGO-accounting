@@ -1,5 +1,6 @@
 package org.grnet.creditmanagement.dtos;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -25,6 +26,12 @@ public class RatingPolicyResponseDto {
     @JsonProperty("installation_id")
     public String installationId;
 
+    @Schema(type = SchemaType.STRING, implementation = String.class,
+            description = "The display name of the installation.", example = "cloud-compute-01", nullable = true)
+    @JsonProperty("installation_name")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String installationName;
+
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
@@ -33,6 +40,12 @@ public class RatingPolicyResponseDto {
     )
     @JsonProperty("metric_definition_id")
     public String metricDefinitionId;
+
+    @Schema(type = SchemaType.STRING, implementation = String.class,
+            description = "The display name of the metric definition.", example = "vCPU Hours", nullable = true)
+    @JsonProperty("metric_definition_name")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String metricDefinitionName;
 
     @Schema(
             type = SchemaType.STRING,

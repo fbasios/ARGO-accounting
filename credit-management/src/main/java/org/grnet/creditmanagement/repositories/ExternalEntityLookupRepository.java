@@ -171,4 +171,46 @@ public class ExternalEntityLookupRepository {
 
         return result.getMatchedCount() > 0;
     }
+
+    /**
+     * Fetches the display name of an Installation ("installation" field on
+     * the nested Project.providers.installations subdocument), by its id.
+     * Returns null if not found.
+     */
+    public String fetchInstallationName(String installationId) {
+
+        var matchInstallation = Aggregates.match(Filters.eq("providers.installations._id", installationId));
+
+        var stages = List.of(
+                Aggregates.unwind("$providers"),
+                Aggregates.unwind("$providers.installations"),
+                matchInstallation,
+                Aggregates.project(Projections.fields(
+                        Projections.excludeId(),
+                        Projections.computed("name", "$providers.installations.installation")
+                ))
+        );
+
+        var result = getProjectCollection().aggregate(stages).first();
+
+        return result == null ? null : result.getString("name");
+    }
+
+    /**
+     * Fetches the display name of a Metric Definition ("metric_name" field),
+     * by its id. Returns null if not found or the id is not a valid ObjectId.
+     */
+    public String fetchMetricDefinitionName(String metricDefinitionId) {
+
+        if (!ObjectId.isValid(metricDefinitionId)) {
+            return null;
+        }
+
+        var result = getMetricDefinitionCollection()
+                .find(Filters.eq("_id", new ObjectId(metricDefinitionId)))
+                .projection(Projections.include("metric_name"))
+                .first();
+
+        return result == null ? null : result.getString("metric_name");
+    }
 }

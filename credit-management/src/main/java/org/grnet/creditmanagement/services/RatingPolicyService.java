@@ -115,7 +115,9 @@ public class RatingPolicyService {
         var response = new RatingPolicyResponseDto();
         response.id = entity.getId();
         response.installationId = entity.getInstallationId();
+        response.installationName = externalEntityLookupRepository.fetchInstallationName(entity.getInstallationId());
         response.metricDefinitionId = entity.getMetricDefinitionId();
+        response.metricDefinitionName = externalEntityLookupRepository.fetchMetricDefinitionName(entity.getMetricDefinitionId());
         response.validFrom = entity.getValidFrom();
         response.rate = entity.getRate();
         return response;
