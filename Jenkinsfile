@@ -22,10 +22,21 @@ pipeline {
                 sh """
                 cd ${WORKSPACE}/${PROJECT_DIR}
                 mvn clean install -DskipTests=true -U
-                mvn clean package -Dquarkus.package.type=uber-jar -am -Pcredit-management
+
+                mvn clean package -Dquarkus.package.type=uber-jar -am
+
+                mkdir -p dist
+                cp api/target/*-runner.jar dist/
+
+                mkdir -p reports/surefire
+                cp -r api/target/surefire-reports/. reports/surefire/ || true
+
+                mvn clean package -Dquarkus.package.type=uber-jar -am -Pcredit-management -DskipTests=true
+                
+                cp api/target/*-runner.jar dist/
                 """
-                junit '**/**/target/surefire-reports/*.xml'
-                archiveArtifacts artifacts: '**/api/target/*.jar'
+                junit 'reports/surefire/*.xml'
+                archiveArtifacts artifacts: '**/dist/*.jar'
                 step( [ $class: 'JacocoPublisher' ] )
             }
             post {

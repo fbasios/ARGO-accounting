@@ -13,6 +13,10 @@
   <version>${revision}</version>
   <name>api</name>
 
+  <properties>
+    <credit.management.classifier></credit.management.classifier>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -167,6 +171,7 @@
   </dependencies>
 
   <build>
+    <finalName>${project.artifactId}-${project.version}${credit.management.classifier}</finalName>
     <resources>
       <resource>
         <directory>src/main/resources</directory>
@@ -250,6 +255,9 @@
 
     <profile>
       <id>credit-management</id>
+      <properties>
+        <credit.management.classifier>-credit-management</credit.management.classifier>
+      </properties>
       <dependencies>
         <dependency>
           <groupId>org.grnet</groupId>
