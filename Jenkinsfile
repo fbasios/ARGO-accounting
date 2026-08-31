@@ -35,7 +35,7 @@ pipeline {
                 
                 cp api/target/*-runner.jar dist/
                 """
-                junit 'reports/surefire/*.xml'
+                junit '**/reports/surefire/*.xml'
                 archiveArtifacts artifacts: '**/dist/*.jar'
                 step( [ $class: 'JacocoPublisher' ] )
             }
