@@ -68,4 +68,17 @@ public class CreditAllocationRepository implements PanacheMongoRepositoryBase<Cr
                 projectId, groupId, to, from)
                 .list();
     }
+
+    /**
+     * Same overlap test as existsOverlapping, but excludes the allocation
+     * with the given id from the comparison — used when updating an
+     * allocation, so it doesn't "overlap with itself".
+     */
+    public boolean existsOverlappingExcludingId(String projectId, String groupId, Instant validFrom, Instant validTo, String excludeId) {
+
+        return find("id != ?1 and projectId = ?2 and groupId = ?3 and validFrom < ?4 and validTo > ?5",
+                excludeId, projectId, groupId, validTo, validFrom)
+                .firstResultOptional()
+                .isPresent();
+    }
 }
