@@ -9,6 +9,7 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -30,6 +31,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.creditmanagement.dtos.CreditAllocationRequestDto;
 import org.grnet.creditmanagement.dtos.CreditAllocationResponseDto;
+import org.grnet.creditmanagement.dtos.CreditAllocationUpdateRequestDto;
 import org.grnet.creditmanagement.exceptions.RatingPolicyConflictExceptionMapper;
 import org.grnet.creditmanagement.pagination.PageResource;
 import org.grnet.creditmanagement.security.CreditManagementSecured;
@@ -227,6 +229,58 @@ public class CreditAllocationEndpoint {
             @Context UriInfo uriInfo) {
 
         var response = creditAllocationService.getAllocationHistory(projectId, groupId, page, size, uriInfo);
+
+        return Response.ok(response).build();
+    }
+
+    @Tag(name = "Credit Management")
+    @Operation(
+            summary = "Update an existing Credit Allocation in place.",
+            description = "Updates any combination of valid_from, valid_to, and total_credits on an existing " +
+                    "Credit Allocation.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The Credit Allocation has been updated.",
+            content = @Content(schema = @Schema(implementation = CreditAllocationResponseDto.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "The resulting valid_from is not strictly earlier than valid_to, the resulting " +
+                    "total_credits is not greater than zero, or the resulting period overlaps with another " +
+                    "existing allocation for the same project_id and group_id.",
+            content = @Content(schema = @Schema(type = SchemaType.OBJECT, implementation = RatingPolicyConflictExceptionMapper.ErrorResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "The Project does not exist, or there is no Credit Allocation with the given id for " +
+                    "this project_id/group_id.",
+            content = @Content(schema = @Schema(type = SchemaType.OBJECT, implementation = RatingPolicyConflictExceptionMapper.ErrorResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(type = SchemaType.OBJECT, implementation = RatingPolicyConflictExceptionMapper.ErrorResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PATCH
+    @Path("/{project_id}/groups/{group_id}/allocations/{allocation_id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateAllocation(
+
+            @Parameter(name = "project_id", in = ParameterIn.PATH, description = "The project id.", required = true,
+                    schema = @Schema(type = SchemaType.STRING, implementation = String.class, example = "707f1f77bcf86cd799439011"))
+            @PathParam("project_id") String projectId,
+
+            @Parameter(name = "group_id", in = ParameterIn.PATH, description = "The group id.", required = true,
+                    schema = @Schema(type = SchemaType.STRING, implementation = String.class, example = "group-42"))
+            @PathParam("group_id") String groupId,
+
+            @Parameter(name = "allocation_id", in = ParameterIn.PATH, description = "The Credit Allocation id.", required = true,
+                    schema = @Schema(type = SchemaType.STRING, implementation = String.class, example = "64f1a2b3c4d5e6f7a8b9c0d1"))
+            @PathParam("allocation_id") String allocationId,
+
+            @RequestBody(description = "The fields to update. Omitted fields are left unchanged.",
+                    content = @Content(schema = @Schema(implementation = CreditAllocationUpdateRequestDto.class)))
+            @Valid @NotNull(message = "The request body is empty.") CreditAllocationUpdateRequestDto request) {
+
+        var response = creditAllocationService.updateAllocation(projectId, groupId, allocationId, request);
 
         return Response.ok(response).build();
     }

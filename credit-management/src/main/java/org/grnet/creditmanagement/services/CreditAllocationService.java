@@ -8,6 +8,7 @@ import jakarta.ws.rs.core.UriInfo;
 import org.bson.types.ObjectId;
 import org.grnet.creditmanagement.dtos.CreditAllocationRequestDto;
 import org.grnet.creditmanagement.dtos.CreditAllocationResponseDto;
+import org.grnet.creditmanagement.dtos.CreditAllocationUpdateRequestDto;
 import org.grnet.creditmanagement.entities.CreditAllocationEntity;
 import org.grnet.creditmanagement.exceptions.CreditAllocationOverlapException;
 import org.grnet.creditmanagement.pagination.PageResource;
@@ -109,5 +110,56 @@ public class CreditAllocationService {
                 .toList();
 
         return new PageResource<>(entries, content, uriInfo);
+    }
+
+    public CreditAllocationResponseDto updateAllocation(String projectId,
+                                                        String groupId,
+                                                        String allocationId,
+                                                        CreditAllocationUpdateRequestDto request) {
+
+        if (!externalEntityLookupRepository.projectExists(projectId)) {
+            throw new NotFoundException("Project not found: " + projectId);
+        }
+
+        var entity = creditAllocationRepository.find("id = ?1 and projectId = ?2 and groupId = ?3",
+                        allocationId, projectId, groupId)
+                .firstResultOptional()
+                .orElseThrow(() -> new NotFoundException(
+                        "There is no Credit Allocation with id " + allocationId +
+                                " for project " + projectId + " and group " + groupId + "."));
+
+        var newValidFrom = request.validFrom != null
+                ? request.validFrom.truncatedTo(ChronoUnit.DAYS)
+                : entity.getValidFrom();
+
+        var newValidTo = request.validTo != null
+                ? request.validTo.truncatedTo(ChronoUnit.DAYS)
+                : entity.getValidTo();
+
+        var newTotalCredits = request.totalCredits != null
+                ? request.totalCredits
+                : entity.getTotalCredits();
+
+        if (!newValidFrom.isBefore(newValidTo)) {
+            throw new BadRequestException("valid_from must be strictly earlier than valid_to.");
+        }
+
+        if (newTotalCredits < 0) {
+            throw new BadRequestException("total_credits must be greater than zero.");
+        }
+
+        if (creditAllocationRepository.existsOverlappingExcludingId(projectId, groupId, newValidFrom, newValidTo, allocationId)) {
+            throw new CreditAllocationOverlapException(
+                    "The requested period [" + newValidFrom + ", " + newValidTo + ") overlaps with an " +
+                            "existing Credit Allocation for project " + projectId + " and group " + groupId + ".");
+        }
+
+        entity.setValidFrom(newValidFrom);
+        entity.setValidTo(newValidTo);
+        entity.setTotalCredits(newTotalCredits);
+
+        creditAllocationRepository.update(entity);
+
+        return toResponseDto(entity);
     }
 }
